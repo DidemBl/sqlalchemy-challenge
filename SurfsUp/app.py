@@ -94,7 +94,7 @@ def stations():
     station_results=[]
     for station in results_station_flask:
         station_dict = {}
-        station_dict["station"] : station
+        station_dict["station"] = station
         station_results.append(station_dict)
 
     return jsonify(station_results) 
@@ -122,7 +122,7 @@ def tobs():
     tobs_results=[]
     for date,tobs in results_active_flask:
         tobs_dict = {}
-        tobs_dict["date"] : tobs
+        tobs_dict[date] = tobs
         tobs_results.append(tobs_dict)
 
     return jsonify(tobs_results)
