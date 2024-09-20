@@ -91,13 +91,9 @@ def stations():
 
     session.close()
 
-    station_results=[]
-    for station in results_station_flask:
-        station_dict = {}
-        station_dict["station"] = station
-        station_results.append(station_dict)
+    all_stations=list(np.ravel(results_station_flask))
 
-    return jsonify(station_results) 
+    return jsonify(all_stations) 
 
 @app.route("/api/v1.0/tobs")
 def tobs():
