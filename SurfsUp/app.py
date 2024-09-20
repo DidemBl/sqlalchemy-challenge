@@ -13,7 +13,7 @@ from flask import Flask, jsonify
 #################################################
 # Database Setup
 #################################################
-engine = create_engine("sqlite:///hawaii.sqlite")
+engine = create_engine("sqlite:///Resources/hawaii.sqlite")
 
 # reflect an existing database into a new model
 Base = automap_base()
@@ -60,11 +60,13 @@ def precipitation():
 
     #Create a query that finds the most recent date in the dataset (8/23/2017)
 
-    results = session.query(Measurement.date, Measurement.prcp).filter(Measurement.date >= query_date).all()
+    query_date_flask = dt.date(2017, 8, 23) - dt.timedelta(days=365)
+
+    results = session.query(Measurement.date, Measurement.prcp).filter(Measurement.date >= query_date_flask).all()
     
     # Calculate the date one year from the last date in data set.
     
-    query_date_flask = dt.date(2017, 8, 23) - dt.timedelta(days=365)
+   
 
     results_flask = session.query(Measurement.date, Measurement.prcp).filter(Measurement.date >= query_date_flask).all()
 
@@ -73,10 +75,57 @@ def precipitation():
     precipitation_results = []
     for date,prcp in results_flask:
         precipitation_dict = {}
+        precipitation_dict[date] = prcp
+        precipitation_results.append(precipitation_dict)
+    return jsonify(precipitation_results)
 
+@app.route("/api/v1.0/stations")
+def stations():
 
+     # Create our session (link) from Python to the DB
+    session = Session(engine)
 
+    # Query all the stations in the dataset 
 
+    results_station_flask = session.query(Station.station).all()
+
+    session.close()
+
+    station_results=[]
+    for station in results_station_flask:
+        station_dict = {}
+        station_dict["station"] : station
+        station_results.append(station_dict)
+
+    return jsonify(station_results) 
+
+@app.route("/api/v1.0/tobs")
+def tobs():
+
+     # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    #Query the dates and temperature observations of the most-active station for the previous year of data.
+
+    active_latest = session.query( Measurement.date).\
+    filter(Measurement.station == "USC00519281").\
+    order_by((Measurement.date).desc()).first()
+    
+    query_date_active_flask= dt.date(2017, 8, 18) - dt.timedelta(days=365)
+    
+    results_active_flask = session.query(Measurement.date, Measurement.tobs).\
+    filter(Measurement.date >= query_date_active_flask).\
+    filter(Measurement.station == "USC00519281").all()
+
+    session.close()
+
+    tobs_results=[]
+    for date,tobs in results_active_flask:
+        tobs_dict = {}
+        tobs_dict["date"] : tobs
+        tobs_results.append(tobs_dict)
+
+    return jsonify(tobs_results)
 
 
 
