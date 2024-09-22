@@ -49,8 +49,8 @@ def home():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<start><br/>"
-        f"/api/v1.0/<start>/<end>"
+        f"/api/v1.0/start<br/>"
+        f"/api/v1.0/start/end"
     )
 
 @app.route("/api/v1.0/precipitation")
@@ -123,7 +123,39 @@ def tobs():
 
     return jsonify(tobs_results)
 
+@app.route("/api/v1.0/<start>")
+def start_date(start):
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
 
+    #Query the database for max, min and avg temperatures
+    """Fetch the temperature info for the start date that matches the path variable supplied by the user, or a 404 if not.
+       the path variable supplied by the user, or a 404 if not."""
+
+    all_results_start = session.query(Measurement.date, Measurement.tobs).all()
+    
+    temp_max_start= session.query(Measurement.date, Measurement.tobs).\
+    order_by((Measurement.tobs).desc()).first()
+    temp_min_start= session.query(Measurement.date, Measurement.tobs).\
+    order_by(Measurement.tobs).first()
+    temp_avg_start = session.query(func.avg(Measurement.tobs)).\
+    filter(Measurement.date >= date).all()
+
+    session.close()
+    #Make a dictionary using the query results
+
+    all_results_start_list = []
+    for date,tobs in all_results_start:
+        all_results_start_dict={}
+        all_results_start_dict["Date"]= date 
+        all_results_start_dict["Max Temp"]= temp_max_start
+        all_results_start_dict["Min Temp"]= temp_min_start
+        all_results_start_dict["Average Temp"]= temp_avg_start
+        all_results_start_list.append(all_results_start_dict)
+
+        if date == start:
+            return jsonify(all_results_start_list)
+    return jsonify({"error": "Date not found."}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)
