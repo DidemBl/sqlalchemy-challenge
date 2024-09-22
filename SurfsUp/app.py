@@ -145,9 +145,8 @@ def start_date(start):
 
     results_start_dict = list(np.ravel(results_query))
 
-    if date == start:
-        return jsonify(results_start_dict)
-    return jsonify({"error": "Date not found."}), 404
+    return jsonify(results_start_dict)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
