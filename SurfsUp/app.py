@@ -132,29 +132,21 @@ def start_date(start):
     """Fetch the temperature info for the start date that matches the path variable supplied by the user, or a 404 if not.
        the path variable supplied by the user, or a 404 if not."""
 
-    all_results_start = session.query(Measurement.date, Measurement.tobs).all()
-    
-    temp_max_start= session.query(Measurement.date, Measurement.tobs).\
-    order_by((Measurement.tobs).desc()).first()
-    temp_min_start= session.query(Measurement.date, Measurement.tobs).\
-    order_by(Measurement.tobs).first()
-    temp_avg_start = session.query(func.avg(Measurement.tobs)).\
-    filter(Measurement.date >= date).all()
+
+    results_start = [Measurement.date,
+       func.max(Measurement.tobs),
+       func.min(Measurement.tobs),
+       func.avg(Measurement.tobs)]
+    results_query = session.query(*results_start).\
+    filter(Measurement.date >= start).all()
 
     session.close()
     #Make a dictionary using the query results
 
-    all_results_start_list = []
-    for date,tobs in all_results_start:
-        all_results_start_dict={}
-        all_results_start_dict["Date"]= date 
-        all_results_start_dict["Max Temp"]= temp_max_start
-        all_results_start_dict["Min Temp"]= temp_min_start
-        all_results_start_dict["Average Temp"]= temp_avg_start
-        all_results_start_list.append(all_results_start_dict)
+    results_start_dict = list(np.ravel(results_query))
 
-        if date == start:
-            return jsonify(all_results_start_list)
+    if date == start:
+        return jsonify(results_start_dict)
     return jsonify({"error": "Date not found."}), 404
 
 if __name__ == '__main__':
