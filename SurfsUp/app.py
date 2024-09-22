@@ -133,10 +133,7 @@ def start_date(start):
        the path variable supplied by the user, or a 404 if not."""
 
 
-    results_start = [Measurement.date,
-       func.max(Measurement.tobs),
-       func.min(Measurement.tobs),
-       func.avg(Measurement.tobs)]
+    results_start = [func.max(Measurement.tobs),func.min(Measurement.tobs),func.avg(Measurement.tobs)]
     results_query = session.query(*results_start).\
     filter(Measurement.date >= start).all()
 
@@ -146,6 +143,28 @@ def start_date(start):
     results_start_dict = list(np.ravel(results_query))
 
     return jsonify(results_start_dict)
+
+@app.route("/api/v1.0/<start>/<end>")
+def start_end(start,end):
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    #Query the database for max, min and avg temperatures
+    """Fetch the temperature info for the start date that matches the path variable supplied by the user, or a 404 if not.
+       the path variable supplied by the user, or a 404 if not."""
+
+
+    results_start_end = [func.max(Measurement.tobs),func.min(Measurement.tobs),func.avg(Measurement.tobs)]
+    results_query_end = session.query(*results_start_end).\
+    filter(Measurement.date >= start).\
+    filter(Measurement.date <= end).all()
+
+    session.close()
+    #Make a dictionary using the query results
+
+    results_start_end_dict= list(np.ravel(results_query_end))
+
+    return jsonify(results_start_end_dict)
 
 
 if __name__ == '__main__':
